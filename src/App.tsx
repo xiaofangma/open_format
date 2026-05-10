@@ -129,7 +129,7 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
     reader.readAsText(file)
   }, [])
 
-  const handleGenerateImagePrompt = useCallback(() => {
+  const handleGenerateCoverPrompt = useCallback(() => {
     const titleMatch = markdown.match(/^#\s+(.+)$/m)
     const title = titleMatch ? titleMatch[1].trim() : ''
 
@@ -143,24 +143,47 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
       .split('\n')
       .map((line) => line.trim())
       .filter((line) => line.length > 10)
-      .slice(0, 2)
+      .slice(0, 5)
       .join(' ')
-      .slice(0, 150)
+      .slice(0, 400)
 
-    const style =
-      activeTab === 'xiaohongshu'
-        ? '扁平插画风格，温暖米色和浅橙色色调，柔和光影，小红书封面配图，竖版 3:4 比例，画面干净留白，高级感，无文字'
-        : '公众号文章配图，横版 16:9 比例，简洁商务风格，浅灰白色调，信息图表风格，清晰易读，无文字'
+    const prompt = `【封面图主题】${title || '文章封面'}
+【文章摘要】${summary || '根据全文内容生成'}
+【风格要求】公众号文章封面配图，横版 16:9 比例，简洁大气，与文章主题高度相关，画面中不要出现任何文字
 
-    const prompt = `【主题】${title || '文章配图'}
-【摘要】${summary || '根据文章内容生成'}
-【风格要求】${style}
-
-请根据以上信息生成一张高质量配图，要求画面简洁、色彩和谐、与文字内容高度相关，画面中不要出现任何文字。`
+请根据以上信息生成一张高质量封面图。`
 
     setImagePrompt(prompt)
     setShowImagePrompt(true)
-  }, [markdown, activeTab])
+  }, [markdown])
+
+  const handleGenerateSectionPrompt = useCallback(() => {
+    const textarea = editorRef.current
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+
+    if (start === end) {
+      alert('请先在编辑器中选中一段文字，再点击生成段落配图')
+      return
+    }
+
+    const selectedText = markdown.slice(start, end).trim()
+
+    const beforeText = markdown.slice(0, start)
+    const sectionTitleMatch = beforeText.match(/^##+\s+(.+)$/gm)
+    const sectionTitle = sectionTitleMatch ? sectionTitleMatch[sectionTitleMatch.length - 1] : ''
+
+    const prompt = `【段落主题】${sectionTitle || '章节配图'}
+【段落内容】${selectedText.slice(0, 400)}
+【风格要求】公众号文章段落配图，横版 16:9 比例，简洁商务风格，浅灰白色调，与段落内容高度相关，画面中不要出现任何文字
+
+请根据以上信息生成一张高质量配图。`
+
+    setImagePrompt(prompt)
+    setShowImagePrompt(true)
+  }, [markdown])
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -312,13 +335,22 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
               </label>
               <span className="text-xs text-gray-300">或将图片拖拽至此</span>
               {activeTab === 'wechat' && (
-                <button
-                  onClick={handleGenerateImagePrompt}
-                  className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 transition-colors"
-                >
-                  <Sparkles className="w-3 h-3" />
-                  生成配图提示词
-                </button>
+                <>
+                  <button
+                    onClick={handleGenerateCoverPrompt}
+                    className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 transition-colors"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    生成封面图
+                  </button>
+                  <button
+                    onClick={handleGenerateSectionPrompt}
+                    className="flex items-center gap-1 text-xs text-orange-500 hover:text-orange-600 transition-colors"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    生成段落配图
+                  </button>
+                </>
               )}
             </div>
             <span className="text-xs text-gray-300">{markdown.length} 字符</span>
