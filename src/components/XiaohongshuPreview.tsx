@@ -298,10 +298,10 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
             <blockquote
               key={idx}
               style={{
-                background: '#F5F0E8',
+                background: '#EDE4D3',
                 borderRadius: '8px',
                 padding: '16px',
-                margin: 0,
+                margin: '0 0 16px 0',
                 color: '#2C2C2C',
                 fontSize: '15px',
                 lineHeight: 1.8,

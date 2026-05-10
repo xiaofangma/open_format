@@ -104,14 +104,34 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
             ),
             blockquote: ({ children }) => (
               <blockquote style={{
-                borderLeft: '3px solid #ea580c',
-                paddingLeft: '12px',
-                margin: '16px 0',
+                position: 'relative',
+                background: '#E8E8E8',
+                borderRadius: '8px',
+                padding: '48px 24px 12px 24px',
+                margin: '16px 0 20px 0',
                 color: '#666',
                 fontSize: '16px',
                 lineHeight: 1.75,
               }}>
-                {children}
+                <span style={{
+                  position: 'absolute',
+                  top: '4px',
+                  left: '12px',
+                  fontSize: '64px',
+                  lineHeight: 1,
+                  color: '#BBBBBB',
+                  fontFamily: '"Songti SC", "SimSun", serif',
+                }}>“</span>
+                <div style={{ padding: '0 8px' }}>{children}</div>
+                <span style={{
+                  position: 'absolute',
+                  bottom: '0px',
+                  right: '12px',
+                  fontSize: '64px',
+                  lineHeight: 1,
+                  color: '#BBBBBB',
+                  fontFamily: '"Songti SC", "SimSun", serif',
+                }}>”</span>
               </blockquote>
             ),
             ul: ({ children }) => (
