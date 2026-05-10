@@ -3,7 +3,7 @@ import { toPng } from 'html-to-image'
 import MarkdownEditor from './components/MarkdownEditor'
 import XiaohongshuPreview from './components/XiaohongshuPreview'
 import WechatPreview from './components/WechatPreview'
-import { Download, Copy, FileText, Image, Upload } from 'lucide-react'
+import { Download, Copy, FileText, Image, Upload, Sparkles, X } from 'lucide-react'
 
 type Tab = 'xiaohongshu' | 'wechat'
 
@@ -40,6 +40,8 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
   const [authorAvatar, setAuthorAvatar] = useState('')
   const [dragOver, setDragOver] = useState(false)
   const [images, setImages] = useState<Record<string, string>>({})
+  const [showImagePrompt, setShowImagePrompt] = useState(false)
+  const [imagePrompt, setImagePrompt] = useState('')
   const imgIdRef = useRef(0)
   const editorRef = useRef<HTMLTextAreaElement>(null)
   const xhsRef = useRef<HTMLDivElement>(null)
@@ -126,6 +128,39 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
     }
     reader.readAsText(file)
   }, [])
+
+  const handleGenerateImagePrompt = useCallback(() => {
+    const titleMatch = markdown.match(/^#\s+(.+)$/m)
+    const title = titleMatch ? titleMatch[1].trim() : ''
+
+    const summary = markdown
+      .replace(/^#.*$/gm, '')
+      .replace(/^\>.*$/gm, '')
+      .replace(/^[-*]\s+.*$/gm, '')
+      .replace(/^!\[.*?\]\(.*?\)$/gm, '')
+      .replace(/^\d+\.\s+.*$/gm, '')
+      .replace(/^---$/gm, '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 10)
+      .slice(0, 2)
+      .join(' ')
+      .slice(0, 150)
+
+    const style =
+      activeTab === 'xiaohongshu'
+        ? '扁平插画风格，温暖米色和浅橙色色调，柔和光影，小红书封面配图，竖版 3:4 比例，画面干净留白，高级感，无文字'
+        : '公众号文章配图，横版 16:9 比例，简洁商务风格，浅灰白色调，信息图表风格，清晰易读，无文字'
+
+    const prompt = `【主题】${title || '文章配图'}
+【摘要】${summary || '根据文章内容生成'}
+【风格要求】${style}
+
+请根据以上信息生成一张高质量配图，要求画面简洁、色彩和谐、与文字内容高度相关，画面中不要出现任何文字。`
+
+    setImagePrompt(prompt)
+    setShowImagePrompt(true)
+  }, [markdown, activeTab])
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -276,10 +311,53 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
                 />
               </label>
               <span className="text-xs text-gray-300">或将图片拖拽至此</span>
+              {activeTab === 'wechat' && (
+                <button
+                  onClick={handleGenerateImagePrompt}
+                  className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 transition-colors"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  生成配图提示词
+                </button>
+              )}
             </div>
             <span className="text-xs text-gray-300">{markdown.length} 字符</span>
           </div>
           <MarkdownEditor ref={editorRef} value={markdown} onChange={setMarkdown} />
+
+          {/* Image Prompt Panel */}
+          {activeTab === 'wechat' && showImagePrompt && (
+            <div className="border-t border-gray-200 bg-amber-50 px-4 py-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+                  <span className="text-xs font-medium text-orange-700">AI 配图提示词</span>
+                  <span className="text-xs text-orange-400">（复制后到即梦 / Midjourney / DALL-E 生成）</span>
+                </div>
+                <button
+                  onClick={() => setShowImagePrompt(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="relative">
+                <pre className="text-xs text-gray-700 bg-white border border-orange-200 rounded-md p-3 whitespace-pre-wrap leading-relaxed font-mono">
+                  {imagePrompt}
+                </pre>
+                <button
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(imagePrompt)
+                    alert('提示词已复制')
+                  }}
+                  className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition-colors"
+                >
+                  <Copy className="w-3 h-3" />
+                  复制
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Author Info (only for xiaohongshu) */}
           {activeTab === 'xiaohongshu' && (
