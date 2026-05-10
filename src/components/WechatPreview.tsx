@@ -195,7 +195,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
               }} />
             ),
             strong: ({ children }) => (
-              <strong style={{ fontWeight: 'bold', color: '#1a1a1a' }}>
+              <strong style={{ fontWeight: 'bold', color: '#2A5D95' }}>
                 {children}
               </strong>
             ),
