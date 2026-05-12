@@ -3,12 +3,52 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 
+// 从 React children 中提取纯文本
+function getText(node: React.ReactNode): string {
+  if (typeof node === 'string') return node
+  if (Array.isArray(node)) return node.map(getText).join('')
+  if (React.isValidElement(node)) return getText(node.props.children)
+  return ''
+}
+
+// 从 markdown 的 ## 行中提取纯文本（去除粗体、斜体、代码、链接等语法）
+function extractH2Text(line: string): string {
+  let text = line.replace(/^##\s+/, '')
+  text = text.replace(/\*\*(.+?)\*\*/g, '$1')
+  text = text.replace(/\*(.+?)\*/g, '$1')
+  text = text.replace(/`(.+?)`/g, '$1')
+  text = text.replace(/\[(.+?)\]\(.+?\)/g, '$1')
+  text = text.replace(/~~(.+?)~~/g, '$1')
+  return text.trim()
+}
+
 interface Props {
   markdown: string
 }
 
 const WechatPreview: React.FC<Props> = ({ markdown }) => {
-  let h2Count = 0
+  // 预先解析 markdown 中所有 ## 标题，建立 纯文本内容 -> 编号 的映射
+  const h2TextToIndexMap = React.useMemo(() => {
+    const map = new Map<string, number>()
+    let count = 0
+    let inCodeBlock = false
+    const lines = markdown.split('\n')
+    for (const line of lines) {
+      if (line.startsWith('```')) {
+        inCodeBlock = !inCodeBlock
+        continue
+      }
+      if (!inCodeBlock && line.startsWith('## ')) {
+        count++
+        const text = extractH2Text(line)
+        const normalized = text.replace(/\s+/g, ' ').trim()
+        if (!map.has(normalized)) {
+          map.set(normalized, count)
+        }
+      }
+    }
+    return map
+  }, [markdown])
 
   // 预处理高亮语法 ==...== 为 HTML mark 标签
   const processedMarkdown = markdown.replace(
@@ -44,18 +84,19 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
               </h1>
             ),
             h2: ({ children }) => {
-              const index = ++h2Count
+              const text = getText(children).replace(/\s+/g, ' ').trim()
+              const index = h2TextToIndexMap.get(text) || 0
               const numStr = String(index).padStart(2, '0')
 
               return (
-                <h2 style={{ margin: '36px 0 28px' }}>
+                <h2 style={{ margin: '36px 0 36px' }}>
                   <span
                     style={{
                       fontSize: '48px',
                       fontStyle: 'italic',
                       color: '#ea580c',
-                      borderBottom: '3px solid #1a1a1a',
-                      paddingBottom: '2px',
+                      borderBottom: '3px solid #ea580c',
+                      paddingBottom: '0px',
                       display: 'inline-block',
                       fontWeight: 'bold',
                       lineHeight: 1.2,
@@ -69,7 +110,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                       fontSize: '22px',
                       fontWeight: 'bold',
                       color: '#1a1a1a',
-                      marginTop: '12px',
+                      marginTop: '20px',
                       lineHeight: 1.5,
                       display: 'block',
                     }}
@@ -84,7 +125,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                 fontSize: '18px',
                 fontWeight: 'bold',
                 lineHeight: 1.5,
-                margin: '24px 0 10px',
+                margin: '24px 0 24px',
                 color: '#1a1a1a',
               }}>
                 {children}
@@ -93,7 +134,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
             p: ({ children }) => (
               <p style={{
                 fontSize: '17px',
-                lineHeight: 1.75,
+                lineHeight: 1.65,
                 margin: '0 0 20px',
                 color: '#3f3f3f',
                 textAlign: 'left',
@@ -137,7 +178,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
             ul: ({ children }) => (
               <ul style={{
                 fontSize: '17px',
-                lineHeight: 1.75,
+                lineHeight: 1.65,
                 margin: '0 0 20px',
                 paddingLeft: '28px',
                 color: '#3f3f3f',
@@ -148,7 +189,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
             ol: ({ children }) => (
               <ol style={{
                 fontSize: '17px',
-                lineHeight: 1.75,
+                lineHeight: 1.65,
                 margin: '0 0 20px',
                 paddingLeft: '28px',
                 color: '#2563eb',
