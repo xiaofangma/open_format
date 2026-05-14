@@ -73,7 +73,72 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
         .forEach((attr) => el.removeAttribute(attr.name))
     })
 
-    // 2. 给所有内联样式加上 !important，抵抗微信编辑器的样式过滤
+    // 2. 处理 blockquote：样式直接放在 blockquote 上（微信会过滤内层 div 样式）
+    clone.querySelectorAll('blockquote').forEach((bq) => {
+      // 删除已有的引号 div/span
+      bq.querySelectorAll('div, span').forEach((el) => {
+        const styleStr = el.getAttribute('style') || ''
+        if (styleStr.includes('font-size: 32px') || styleStr.includes('position: absolute')) {
+          el.remove()
+        }
+      })
+
+      // 解开包裹 children 的 div
+      const wrapperDiv = bq.querySelector('div[style*="margin-bottom: -20px"]')
+      if (wrapperDiv) {
+        while (wrapperDiv.firstChild) {
+          bq.insertBefore(wrapperDiv.firstChild, wrapperDiv)
+        }
+        wrapperDiv.remove()
+      }
+
+      // 清除内容元素默认 margin
+      bq.querySelectorAll('p, ul, ol').forEach((el) => {
+        const htmlEl = el as HTMLElement
+        htmlEl.style.marginTop = '0px'
+        htmlEl.style.marginBottom = '0px'
+      })
+
+      // 样式直接放在 blockquote 上，不用 div 包裹（微信编辑器会过滤 div）
+      bq.style.background = '#EDF2F7'
+      bq.style.backgroundColor = '#EDF2F7'
+      bq.style.borderRadius = '8px'
+      bq.style.padding = '8px 16px'
+      bq.style.margin = '16px 0 20px 0'
+      bq.style.color = '#475569'
+      bq.style.fontSize = '16px'
+      bq.style.lineHeight = '1.75'
+      bq.style.border = 'none'
+      bq.style.boxShadow = 'none'
+
+      // 上引号
+      const upperP = document.createElement('p')
+      upperP.style.margin = '0px'
+      upperP.style.lineHeight = '1'
+      const upperSpan = document.createElement('span')
+      upperSpan.innerHTML = '&#8220;'
+      upperSpan.style.fontSize = '32px'
+      upperSpan.style.color = '#A0B4CC'
+      upperSpan.style.fontFamily = '"Songti SC", "SimSun", serif'
+      upperP.appendChild(upperSpan)
+      bq.insertBefore(upperP, bq.firstChild)
+
+      // 下引号（用 p 标签，微信对 p 的 text-align 保留更好）
+      const lowerP = document.createElement('p')
+      lowerP.align = 'right'
+      lowerP.style.textAlign = 'right'
+      lowerP.style.margin = '0px'
+      lowerP.style.lineHeight = '0.6'
+      const lowerSpan = document.createElement('span')
+      lowerSpan.innerHTML = '&#8221;'
+      lowerSpan.style.fontSize = '32px'
+      lowerSpan.style.color = '#A0B4CC'
+      lowerSpan.style.fontFamily = '"Songti SC", "SimSun", serif'
+      lowerP.appendChild(lowerSpan)
+      bq.appendChild(lowerP)
+    })
+
+    // 3. 给所有内联样式加上 !important，抵抗微信编辑器的样式过滤
     clone.querySelectorAll('[style]').forEach((el) => {
       const style = (el as HTMLElement).style
       const cssText = style.cssText
@@ -87,7 +152,7 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
       }
     })
 
-    // 3. 处理图片：确保使用 base64，避免相对路径失效
+    // 4. 处理图片：确保使用 base64，避免相对路径失效
     clone.querySelectorAll('img').forEach((img) => {
       const src = img.getAttribute('src') || ''
       // 如果图片不是 base64 也不是 http 链接，标记为不可加载
@@ -97,7 +162,7 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
       }
     })
 
-    // 4. 移除空的 class 属性
+    // 3. 移除空的 class 属性
     clone.querySelectorAll('*').forEach((el) => {
       if (el.getAttribute('class') === '') {
         el.removeAttribute('class')

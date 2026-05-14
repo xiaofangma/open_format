@@ -143,38 +143,46 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                 {children}
               </p>
             ),
-            blockquote: ({ children }) => (
-              <blockquote style={{
-                position: 'relative',
-                background: '#E8E8E8',
-                borderRadius: '8px',
-                padding: '48px 24px 12px 24px',
-                margin: '16px 0 20px 0',
-                color: '#666',
-                fontSize: '16px',
-                lineHeight: 1.75,
-              }}>
-                <span style={{
-                  position: 'absolute',
-                  top: '4px',
-                  left: '12px',
-                  fontSize: '64px',
-                  lineHeight: 1,
-                  color: '#BBBBBB',
-                  fontFamily: '"Songti SC", "SimSun", serif',
-                }}>“</span>
-                <div style={{ padding: '0 8px' }}>{children}</div>
-                <span style={{
-                  position: 'absolute',
-                  bottom: '0px',
-                  right: '12px',
-                  fontSize: '64px',
-                  lineHeight: 1,
-                  color: '#BBBBBB',
-                  fontFamily: '"Songti SC", "SimSun", serif',
-                }}>”</span>
-              </blockquote>
-            ),
+            blockquote: ({ children }) => {
+              const childArray = React.Children.toArray(children)
+              const lastIndex = childArray.length - 1
+              const styledChildren = childArray.map((child, index) => {
+                if (index === lastIndex && React.isValidElement(child)) {
+                  const originalStyle = (child.props as any)?.style || {}
+                  return React.cloneElement(child, {
+                    style: { ...originalStyle, marginBottom: '0px' },
+                  } as any)
+                }
+                return child
+              })
+              return (
+                <blockquote style={{
+                  background: '#EDF2F7',
+                  borderRadius: '8px',
+                  padding: '12px 16px',
+                  margin: '16px 0 20px 0',
+                  color: '#475569',
+                  fontSize: '16px',
+                  lineHeight: 1.75,
+                }}>
+                  <div style={{ margin: '0px', lineHeight: 1 }}>
+                    <span style={{
+                      fontSize: '32px',
+                      color: '#A0B4CC',
+                      fontFamily: '”Songti SC”, “SimSun”, serif',
+                    }}>“</span>
+                  </div>
+                  {styledChildren}
+                  <div style={{ margin: '0px', lineHeight: 0.6, textAlign: 'right' }}>
+                    <span style={{
+                      fontSize: '32px',
+                      color: '#A0B4CC',
+                      fontFamily: '”Songti SC”, “SimSun”, serif',
+                    }}>”</span>
+                  </div>
+                </blockquote>
+              )
+            },
             ul: ({ children }) => (
               <ul style={{
                 fontSize: '17px',
@@ -205,7 +213,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
             code: ({ children }) => (
               <code style={{
                 background: '#f4f4f4',
-                padding: '2px 6px',
+                padding: '0px', marginBottom: '-20px', overflow: 'hidden',
                 borderRadius: '3px',
                 fontSize: '14px',
                 color: '#d63384',
