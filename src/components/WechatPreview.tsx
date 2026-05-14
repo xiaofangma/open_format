@@ -7,7 +7,7 @@ import rehypeRaw from 'rehype-raw'
 function getText(node: React.ReactNode): string {
   if (typeof node === 'string') return node
   if (Array.isArray(node)) return node.map(getText).join('')
-  if (React.isValidElement(node)) return getText(node.props.children)
+  if (React.isValidElement(node)) return getText((node.props as any).children)
   return ''
 }
 
