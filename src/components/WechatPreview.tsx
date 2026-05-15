@@ -120,7 +120,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                 </h2>
               )
             },
-            h3: ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
+            h3: ({ children, style }: { children?: React.ReactNode; style?: React.CSSProperties }) => (
               <h3 style={{
                 fontSize: '18px',
                 fontWeight: 'bold',
@@ -132,7 +132,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                 {children}
               </h3>
             ),
-            p: ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
+            p: ({ children, style }: { children?: React.ReactNode; style?: React.CSSProperties }) => (
               <p style={{
                 fontSize: '17px',
                 lineHeight: 1.65,
@@ -189,7 +189,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                 </blockquote>
               )
             },
-            ul: ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
+            ul: ({ children, style }: { children?: React.ReactNode; style?: React.CSSProperties }) => (
               <ul style={{
                 fontSize: '17px',
                 lineHeight: 1.65,
@@ -201,7 +201,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                 {children}
               </ul>
             ),
-            ol: ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
+            ol: ({ children, style }: { children?: React.ReactNode; style?: React.CSSProperties }) => (
               <ol style={{
                 fontSize: '17px',
                 lineHeight: 1.65,
