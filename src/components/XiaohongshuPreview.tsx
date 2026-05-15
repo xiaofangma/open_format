@@ -539,11 +539,15 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                   overflow: 'hidden',
                 }}
               >
-                {pageBlocks.map((block) => (
-                  <React.Fragment key={block.id}>
-                    {renderBlock(blocks[block.id], block.id)}
-                  </React.Fragment>
-                ))}
+                {pageBlocks.map((block) => {
+                  const blockData = blocks[block.id]
+                  if (!blockData) return null
+                  return (
+                    <React.Fragment key={block.id}>
+                      {renderBlock(blockData, block.id)}
+                    </React.Fragment>
+                  )
+                })}
               </div>
 
             </div>

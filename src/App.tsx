@@ -1,9 +1,9 @@
 import { useState, useRef, useCallback, useMemo, type ChangeEvent } from 'react'
-import { toPng } from 'html-to-image'
+import { toBlob } from 'html-to-image'
 import MarkdownEditor from './components/MarkdownEditor'
 import XiaohongshuPreview from './components/XiaohongshuPreview'
 import WechatPreview from './components/WechatPreview'
-import { Download, Copy, FileText, Image, Upload, Sparkles, X } from 'lucide-react'
+import { Download, Copy, FileText, Image, Upload, Sparkles, X, Loader2 } from 'lucide-react'
 
 type Tab = 'xiaohongshu' | 'wechat'
 
@@ -42,20 +42,54 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
   const [images, setImages] = useState<Record<string, string>>({})
   const [showImagePrompt, setShowImagePrompt] = useState(false)
   const [imagePrompt, setImagePrompt] = useState('')
+  const [isDownloading, setIsDownloading] = useState(false)
   const imgIdRef = useRef(0)
   const editorRef = useRef<HTMLTextAreaElement>(null)
   const xhsRef = useRef<HTMLDivElement>(null)
+  const downloadingRef = useRef(false)
 
   const handleDownloadXhs = useCallback(async () => {
-    if (!xhsRef.current) return
-    const pages = xhsRef.current.querySelectorAll('.xhs-page')
-    for (let i = 0; i < pages.length; i++) {
-      const node = pages[i] as HTMLElement
-      const dataUrl = await toPng(node, { pixelRatio: 3, cacheBust: true })
-      const link = document.createElement('a')
-      link.download = `xiaohongshu-page-${i + 1}.png`
-      link.href = dataUrl
-      link.click()
+    if (downloadingRef.current) return
+    downloadingRef.current = true
+    setIsDownloading(true)
+    try {
+      if (!xhsRef.current) return
+      const pages = Array.from(xhsRef.current.children).filter(
+        (el) => el.classList.contains('xhs-page')
+      )
+      for (let i = 0; i < pages.length; i++) {
+        const node = pages[i] as HTMLElement
+        const blob = await toBlob(node, { pixelRatio: 3 })
+        if (!blob) continue
+        const file = new File([blob], `xiaohongshu-page-${i + 1}.png`, { type: 'image/png' })
+
+        // 优先使用系统分享面板（iOS/macOS 可直接存入照片）
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: '小红书长图' })
+            continue
+          } catch (err) {
+            // 用户取消分享 (AbortError) 时不 fallback，只有真正出错才下载
+            if (err instanceof DOMException && err.name === 'AbortError') {
+              continue
+            }
+          }
+        }
+
+        // Fallback：浏览器下载
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.download = `xiaohongshu-page-${i + 1}.png`
+        link.href = url
+        link.style.display = 'none'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+      }
+    } finally {
+      downloadingRef.current = false
+      setIsDownloading(false)
     }
   }, [])
 
@@ -92,18 +126,19 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
         wrapperDiv.remove()
       }
 
-      // 清除内容元素默认 margin
+      // 清除内容元素默认 margin，并同步字体大小
       bq.querySelectorAll('p, ul, ol').forEach((el) => {
         const htmlEl = el as HTMLElement
         htmlEl.style.marginTop = '0px'
         htmlEl.style.marginBottom = '0px'
+        htmlEl.style.fontSize = '16px'
       })
 
       // 样式直接放在 blockquote 上，不用 div 包裹（微信编辑器会过滤 div）
       bq.style.background = '#EDF2F7'
       bq.style.backgroundColor = '#EDF2F7'
-      bq.style.borderRadius = '8px'
-      bq.style.padding = '8px 16px'
+      bq.style.borderRadius = '0px'
+      bq.style.padding = '8px 12px'
       bq.style.margin = '16px 0 20px 0'
       bq.style.color = '#475569'
       bq.style.fontSize = '16px'
@@ -119,7 +154,7 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
       upperSpan.innerHTML = '&#8220;'
       upperSpan.style.fontSize = '32px'
       upperSpan.style.color = '#A0B4CC'
-      upperSpan.style.fontFamily = '"Songti SC", "SimSun", serif'
+      upperSpan.style.fontFamily = '"Georgia", "Songti SC", "SimSun", serif'
       upperP.appendChild(upperSpan)
       bq.insertBefore(upperP, bq.firstChild)
 
@@ -127,13 +162,13 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
       const lowerP = document.createElement('p')
       lowerP.align = 'right'
       lowerP.style.textAlign = 'right'
-      lowerP.style.margin = '0px'
-      lowerP.style.lineHeight = '0.6'
+      lowerP.style.margin = '-6px 0 0 0'
+      lowerP.style.lineHeight = '0.8'
       const lowerSpan = document.createElement('span')
       lowerSpan.innerHTML = '&#8221;'
       lowerSpan.style.fontSize = '32px'
       lowerSpan.style.color = '#A0B4CC'
-      lowerSpan.style.fontFamily = '"Songti SC", "SimSun", serif'
+      lowerSpan.style.fontFamily = '"Georgia", "Songti SC", "SimSun", serif'
       lowerP.appendChild(lowerSpan)
       bq.appendChild(lowerP)
     })
@@ -509,10 +544,19 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
             {activeTab === 'xiaohongshu' ? (
               <button
                 onClick={handleDownloadXhs}
-                className="flex items-center gap-1 px-3 py-1 text-xs font-medium text-white bg-gray-900 rounded-md hover:bg-gray-800 transition-colors"
+                disabled={isDownloading}
+                className={`flex items-center gap-1 px-3 py-1 text-xs font-medium text-white rounded-md transition-colors ${
+                  isDownloading
+                    ? 'bg-gray-500 cursor-not-allowed'
+                    : 'bg-gray-900 hover:bg-gray-800'
+                }`}
               >
-                <Download className="w-3 h-3" />
-                下载图片
+                {isDownloading ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <Download className="w-3 h-3" />
+                )}
+                {isDownloading ? '生成中...' : '下载图片'}
               </button>
             ) : (
               <button

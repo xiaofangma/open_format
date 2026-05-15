@@ -120,18 +120,19 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                 </h2>
               )
             },
-            h3: ({ children }) => (
+            h3: ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
               <h3 style={{
                 fontSize: '18px',
                 fontWeight: 'bold',
                 lineHeight: 1.5,
                 margin: '24px 0 24px',
                 color: '#1a1a1a',
+                ...style,
               }}>
                 {children}
               </h3>
             ),
-            p: ({ children }) => (
+            p: ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
               <p style={{
                 fontSize: '17px',
                 lineHeight: 1.65,
@@ -139,6 +140,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                 color: '#3f3f3f',
                 textAlign: 'left',
                 wordWrap: 'break-word',
+                ...style,
               }}>
                 {children}
               </p>
@@ -147,10 +149,14 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
               const childArray = React.Children.toArray(children)
               const lastIndex = childArray.length - 1
               const styledChildren = childArray.map((child, index) => {
-                if (index === lastIndex && React.isValidElement(child)) {
+                if (React.isValidElement(child)) {
                   const originalStyle = (child.props as any)?.style || {}
                   return React.cloneElement(child, {
-                    style: { ...originalStyle, marginBottom: '0px' },
+                    style: {
+                      ...originalStyle,
+                      fontSize: '16px',
+                      marginBottom: index === lastIndex ? '0px' : originalStyle.marginBottom,
+                    },
                   } as any)
                 }
                 return child
@@ -158,8 +164,8 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
               return (
                 <blockquote style={{
                   background: '#EDF2F7',
-                  borderRadius: '8px',
-                  padding: '12px 16px',
+                  borderRadius: '0px',
+                  padding: '8px 12px',
                   margin: '16px 0 20px 0',
                   color: '#475569',
                   fontSize: '16px',
@@ -169,38 +175,40 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                     <span style={{
                       fontSize: '32px',
                       color: '#A0B4CC',
-                      fontFamily: '”Songti SC”, “SimSun”, serif',
+                      fontFamily: '”Georgia”, “Songti SC”, “SimSun”, serif',
                     }}>“</span>
                   </div>
                   {styledChildren}
-                  <div style={{ margin: '0px', lineHeight: 0.6, textAlign: 'right' }}>
+                  <div style={{ margin: '-6px 0 0 0', lineHeight: 0.8, textAlign: 'right' }}>
                     <span style={{
                       fontSize: '32px',
                       color: '#A0B4CC',
-                      fontFamily: '”Songti SC”, “SimSun”, serif',
+                      fontFamily: '”Georgia”, “Songti SC”, “SimSun”, serif',
                     }}>”</span>
                   </div>
                 </blockquote>
               )
             },
-            ul: ({ children }) => (
+            ul: ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
               <ul style={{
                 fontSize: '17px',
                 lineHeight: 1.65,
                 margin: '0 0 20px',
                 paddingLeft: '28px',
                 color: '#3f3f3f',
+                ...style,
               }}>
                 {children}
               </ul>
             ),
-            ol: ({ children }) => (
+            ol: ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
               <ol style={{
                 fontSize: '17px',
                 lineHeight: 1.65,
                 margin: '0 0 20px',
                 paddingLeft: '28px',
                 color: '#2563eb',
+                ...style,
               }}>
                 {children}
               </ol>
