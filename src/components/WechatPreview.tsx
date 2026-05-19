@@ -196,6 +196,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                 margin: '0 0 20px',
                 paddingLeft: '28px',
                 color: '#3f3f3f',
+                listStyleType: 'disc',
                 ...style,
               }}>
                 {children}
@@ -208,6 +209,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                 margin: '0 0 20px',
                 paddingLeft: '28px',
                 color: '#2563eb',
+                listStyleType: 'decimal',
                 ...style,
               }}>
                 {children}
