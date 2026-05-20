@@ -220,13 +220,13 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                 <span style={{ color: '#3f3f3f' }}>{children}</span>
               </li>
             ),
-            code: ({ children }) => (
+            code: ({ children, inline }: { children?: React.ReactNode; inline?: boolean }) => (
               <code style={{
-                background: '#F5EDE4',
-                padding: '2px 6px',
-                borderRadius: '4px',
+                background: inline ? '#F5EDE4' : 'transparent',
+                padding: inline ? '2px 6px' : '0',
+                borderRadius: inline ? '4px' : '0',
                 fontSize: '14px',
-                color: '#D97757',
+                color: inline ? '#D97757' : 'inherit',
                 fontFamily: 'Consolas, Monaco, "Courier New", monospace',
               }}>
                 {children}
