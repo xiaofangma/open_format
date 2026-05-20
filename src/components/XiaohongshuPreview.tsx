@@ -82,10 +82,23 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
         }
       }
 
-      for (const line of lines) {
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]
         const trimmed = line.trim()
         if (!trimmed) {
           flushParagraph()
+          olCounter = 0
+          continue
+        }
+        if (trimmed.startsWith('```')) {
+          flushParagraph()
+          const codeLines: string[] = []
+          i++
+          while (i < lines.length && !lines[i].trim().startsWith('```')) {
+            codeLines.push(lines[i])
+            i++
+          }
+          result.push({ type: 'codeblock', content: codeLines.join('\n') })
           olCounter = 0
           continue
         }
@@ -392,6 +405,27 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
             </div>
           )
         }
+        case 'codeblock':
+          return (
+            <pre
+              key={idx}
+              style={{
+                background: '#F5EDE4',
+                padding: '12px',
+                borderRadius: '8px',
+                overflow: 'auto',
+                fontSize: '13px',
+                lineHeight: 1.6,
+                margin: '0 0 16px',
+                fontFamily: 'ui-monospace, monospace',
+                color: '#2C2C2C',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+              }}
+            >
+              {block.content}
+            </pre>
+          )
         case 'hr':
           return (
             <hr
