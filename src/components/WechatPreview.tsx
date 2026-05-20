@@ -222,7 +222,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
             ),
             code: ({ children }) => (
               <code style={{
-                background: '#FAF5F0',
+                background: '#F5EDE4',
                 padding: '2px 6px',
                 borderRadius: '4px',
                 fontSize: '14px',
@@ -234,7 +234,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
             ),
             pre: ({ children }) => (
               <pre style={{
-                background: '#FAF5F0',
+                background: '#F5EDE4',
                 padding: '16px',
                 borderRadius: '8px',
                 overflow: 'auto',
