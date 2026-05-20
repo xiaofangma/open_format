@@ -46,7 +46,7 @@ function parseInline(text: string): React.ReactNode {
     } else if (full.startsWith('~~')) {
       parts.push(<del key={m.index} style={{ textDecoration: 'line-through', opacity: 0.6 }}>{m[5]}</del>)
     } else if (full.startsWith('`')) {
-      parts.push(<code key={m.index} style={{ background: '#EFEBE4', padding: '1px 4px', borderRadius: '3px', fontSize: '0.88em', fontFamily: 'ui-monospace, monospace', color: '#2C2C2C' }}>{m[6]}</code>)
+      parts.push(<code key={m.index} style={{ background: '#FAF5F0', padding: '2px 5px', borderRadius: '4px', fontSize: '0.88em', fontFamily: 'ui-monospace, monospace', color: '#D97757' }}>{m[6]}</code>)
     } else if (full.startsWith('[')) {
       parts.push(<a key={m.index} href={m[8]} style={{ color: '#576b95', textDecoration: 'none' }}>{m[7]}</a>)
     } else {
