@@ -242,7 +242,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                 lineHeight: 1.6,
                 margin: '0 0 20px',
                 fontFamily: 'Consolas, Monaco, "Courier New", monospace',
-                color: '#D97757',
+                color: '#2C2C2C',
               }}>
                 {children}
               </pre>
