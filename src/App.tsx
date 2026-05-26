@@ -207,7 +207,13 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
       code.replaceWith(span)
     })
 
-    // 4. 给所有内联样式加上 !important，抵抗微信编辑器的样式过滤
+    // 4. 列表项之间收紧，只保留列表整体和正文之间的间距
+    clone.querySelectorAll('li').forEach((li) => {
+      li.style.margin = '0'
+      li.style.lineHeight = '1.65'
+    })
+
+    // 5. 给所有内联样式加上 !important，抵抗微信编辑器的样式过滤
     clone.querySelectorAll('[style]').forEach((el) => {
       const style = (el as HTMLElement).style
       const cssText = style.cssText
@@ -221,7 +227,7 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
       }
     })
 
-    // 5. 处理图片：确保使用 base64，避免相对路径失效
+    // 6. 处理图片：确保使用 base64，避免相对路径失效
     clone.querySelectorAll('img').forEach((img) => {
       const src = img.getAttribute('src') || ''
       // 如果图片不是 base64 也不是 http 链接，标记为不可加载
@@ -231,7 +237,7 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
       }
     })
 
-    // 6. 移除空的 class 属性
+    // 7. 移除空的 class 属性
     clone.querySelectorAll('*').forEach((el) => {
       if (el.getAttribute('class') === '') {
         el.removeAttribute('class')

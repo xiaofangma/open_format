@@ -219,7 +219,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
               </ol>
             ),
             li: ({ children }) => (
-              <li style={{ margin: '14px 0' }}>
+              <li style={{ margin: '0', lineHeight: 1.65 }}>
                 <span style={{ color: '#3f3f3f' }}>{children}</span>
               </li>
             ),
