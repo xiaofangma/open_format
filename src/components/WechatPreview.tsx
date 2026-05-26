@@ -4,12 +4,13 @@ import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 
 const BlockCodeCtx = React.createContext(false)
+const WECHAT_CODE_FONT = 'Menlo, "SF Mono", "SFMono-Regular", Monaco, Consolas, "Liberation Mono", monospace'
 
 // 从 React children 中提取纯文本
 function getText(node: React.ReactNode): string {
   if (typeof node === 'string') return node
   if (Array.isArray(node)) return node.map(getText).join('')
-  if (React.isValidElement(node)) return getText((node.props as any).children)
+  if (React.isValidElement<{ children?: React.ReactNode }>(node)) return getText(node.props.children)
   return ''
 }
 
@@ -151,15 +152,15 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
               const childArray = React.Children.toArray(children)
               const lastIndex = childArray.length - 1
               const styledChildren = childArray.map((child, index) => {
-                if (React.isValidElement(child)) {
-                  const originalStyle = (child.props as any)?.style || {}
+                if (React.isValidElement<{ style?: React.CSSProperties }>(child)) {
+                  const originalStyle = child.props.style || {}
                   return React.cloneElement(child, {
                     style: {
                       ...originalStyle,
                       fontSize: '16px',
                       marginBottom: index === lastIndex ? '0px' : originalStyle.marginBottom,
                     },
-                  } as any)
+                  })
                 }
                 return child
               })
@@ -223,35 +224,44 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
               </li>
             ),
             code: ({ children }: { children?: React.ReactNode }) => {
-              const isBlock = React.useContext(BlockCodeCtx)
               return (
-                <code style={{
-                  background: isBlock ? 'transparent' : '#F5EDE4',
-                  padding: isBlock ? '0' : '2px 6px',
-                  borderRadius: isBlock ? '0' : '4px',
-                  fontSize: '14px',
-                  color: isBlock ? 'inherit' : '#D97757',
-                  fontFamily: 'Consolas, Monaco, "Courier New", monospace',
-                }}>
-                  {children}
-                </code>
+                <BlockCodeCtx.Consumer>
+                  {(isBlock) => (
+                    <span style={{
+                      background: isBlock ? 'transparent' : '#F5EDE4',
+                      padding: isBlock ? '0' : '2px 6px',
+                      borderRadius: isBlock ? '0' : '4px',
+                      fontSize: '14px',
+                      color: isBlock ? 'inherit' : '#D97757',
+                      fontFamily: WECHAT_CODE_FONT,
+                      fontVariantLigatures: 'none',
+                      whiteSpace: isBlock ? 'pre-wrap' : 'normal',
+                      wordBreak: 'break-word',
+                    }}>
+                      {children}
+                    </span>
+                  )}
+                </BlockCodeCtx.Consumer>
               )
             },
             pre: ({ children }) => (
               <BlockCodeCtx.Provider value={true}>
-                <pre style={{
-                  background: '#FFF0EB',
+                <section style={{
+                  background: '#F3F4F6',
                   padding: '16px',
                   borderRadius: '8px',
-                  overflow: 'auto',
-                  fontSize: '14px',
-                  lineHeight: 1.6,
+                  overflow: 'hidden',
+                  fontSize: '15px',
+                  lineHeight: 1.7,
                   margin: '0 0 20px',
-                  fontFamily: 'Consolas, Monaco, "Courier New", monospace',
-                  color: '#D97757',
+                  fontFamily: WECHAT_CODE_FONT,
+                  fontVariantLigatures: 'none',
+                  color: '#4B5563',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
                 }}>
                   {children}
-                </pre>
+                </section>
               </BlockCodeCtx.Provider>
             ),
             hr: () => (

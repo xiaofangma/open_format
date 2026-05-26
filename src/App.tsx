@@ -7,6 +7,8 @@ import { Download, Copy, FileText, Image, Upload, Sparkles, X, Loader2 } from 'l
 
 type Tab = 'xiaohongshu' | 'wechat'
 
+const WECHAT_CODE_FONT = 'Menlo, "SF Mono", "SFMono-Regular", Monaco, Consolas, "Liberation Mono", monospace'
+
 function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
@@ -173,7 +175,39 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
       bq.appendChild(lowerP)
     })
 
-    // 3. 给所有内联样式加上 !important，抵抗微信编辑器的样式过滤
+    // 3. 避免公众号后台套用自己的 code/pre 默认样式
+    clone.querySelectorAll('pre').forEach((pre) => {
+      const section = document.createElement('section')
+      section.innerHTML = pre.innerHTML
+      section.style.cssText = (pre as HTMLElement).style.cssText
+      section.style.background = '#F3F4F6'
+      section.style.backgroundColor = '#F3F4F6'
+      section.style.padding = '16px'
+      section.style.borderRadius = '8px'
+      section.style.overflow = 'hidden'
+      section.style.fontSize = '15px'
+      section.style.lineHeight = '1.7'
+      section.style.margin = '0 0 20px'
+      section.style.fontFamily = WECHAT_CODE_FONT
+      section.style.fontVariantLigatures = 'none'
+      section.style.color = '#4B5563'
+      section.style.whiteSpace = 'pre-wrap'
+      section.style.wordBreak = 'break-word'
+      pre.replaceWith(section)
+    })
+
+    clone.querySelectorAll('code').forEach((code) => {
+      const span = document.createElement('span')
+      span.innerHTML = code.innerHTML
+      span.style.cssText = (code as HTMLElement).style.cssText
+      span.style.fontFamily = WECHAT_CODE_FONT
+      span.style.fontSize = '14px'
+      span.style.fontVariantLigatures = 'none'
+      span.style.wordBreak = 'break-word'
+      code.replaceWith(span)
+    })
+
+    // 4. 给所有内联样式加上 !important，抵抗微信编辑器的样式过滤
     clone.querySelectorAll('[style]').forEach((el) => {
       const style = (el as HTMLElement).style
       const cssText = style.cssText
@@ -187,7 +221,7 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
       }
     })
 
-    // 4. 处理图片：确保使用 base64，避免相对路径失效
+    // 5. 处理图片：确保使用 base64，避免相对路径失效
     clone.querySelectorAll('img').forEach((img) => {
       const src = img.getAttribute('src') || ''
       // 如果图片不是 base64 也不是 http 链接，标记为不可加载
@@ -197,7 +231,7 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
       }
     })
 
-    // 3. 移除空的 class 属性
+    // 6. 移除空的 class 属性
     clone.querySelectorAll('*').forEach((el) => {
       if (el.getAttribute('class') === '') {
         el.removeAttribute('class')
@@ -235,7 +269,7 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
 
     const summary = markdown
       .replace(/^#.*$/gm, '')
-      .replace(/^\>.*$/gm, '')
+      .replace(/^>.*$/gm, '')
       .replace(/^[-*]\s+.*$/gm, '')
       .replace(/^!\[.*?\]\(.*?\)$/gm, '')
       .replace(/^\d+\.\s+.*$/gm, '')
