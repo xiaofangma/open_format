@@ -410,7 +410,7 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
             <pre
               key={idx}
               style={{
-                background: '#F5EDE4',
+                background: '#FFF0EB',
                 padding: '12px',
                 borderRadius: '8px',
                 overflow: 'auto',
@@ -418,7 +418,7 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                 lineHeight: 1.6,
                 margin: '0 0 16px',
                 fontFamily: 'ui-monospace, monospace',
-                color: '#2C2C2C',
+                color: '#D97757',
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-word',
               }}

@@ -3,6 +3,8 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 
+const BlockCodeCtx = React.createContext(false)
+
 // 从 React children 中提取纯文本
 function getText(node: React.ReactNode): string {
   if (typeof node === 'string') return node
@@ -220,32 +222,37 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                 <span style={{ color: '#3f3f3f' }}>{children}</span>
               </li>
             ),
-            code: ({ children, inline }: { children?: React.ReactNode; inline?: boolean }) => (
-              <code style={{
-                background: inline ? '#F5EDE4' : 'transparent',
-                padding: inline ? '2px 6px' : '0',
-                borderRadius: inline ? '4px' : '0',
-                fontSize: '14px',
-                color: inline ? '#D97757' : 'inherit',
-                fontFamily: 'Consolas, Monaco, "Courier New", monospace',
-              }}>
-                {children}
-              </code>
-            ),
+            code: ({ children }: { children?: React.ReactNode }) => {
+              const isBlock = React.useContext(BlockCodeCtx)
+              return (
+                <code style={{
+                  background: isBlock ? 'transparent' : '#F5EDE4',
+                  padding: isBlock ? '0' : '2px 6px',
+                  borderRadius: isBlock ? '0' : '4px',
+                  fontSize: '14px',
+                  color: isBlock ? 'inherit' : '#D97757',
+                  fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+                }}>
+                  {children}
+                </code>
+              )
+            },
             pre: ({ children }) => (
-              <pre style={{
-                background: '#F5EDE4',
-                padding: '16px',
-                borderRadius: '8px',
-                overflow: 'auto',
-                fontSize: '14px',
-                lineHeight: 1.6,
-                margin: '0 0 20px',
-                fontFamily: 'Consolas, Monaco, "Courier New", monospace',
-                color: '#2C2C2C',
-              }}>
-                {children}
-              </pre>
+              <BlockCodeCtx.Provider value={true}>
+                <pre style={{
+                  background: '#FFF0EB',
+                  padding: '16px',
+                  borderRadius: '8px',
+                  overflow: 'auto',
+                  fontSize: '14px',
+                  lineHeight: 1.6,
+                  margin: '0 0 20px',
+                  fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+                  color: '#D97757',
+                }}>
+                  {children}
+                </pre>
+              </BlockCodeCtx.Provider>
             ),
             hr: () => (
               <hr style={{
