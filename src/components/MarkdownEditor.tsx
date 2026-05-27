@@ -1,17 +1,19 @@
-import { forwardRef } from 'react'
+import { forwardRef, type ClipboardEvent } from 'react'
 
 interface Props {
   value: string
   onChange: (val: string) => void
+  onPaste?: (e: ClipboardEvent<HTMLTextAreaElement>) => void
 }
 
 const MarkdownEditor = forwardRef<HTMLTextAreaElement, Props>(
-  ({ value, onChange }, ref) => {
+  ({ value, onChange, onPaste }, ref) => {
     return (
       <textarea
         ref={ref}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onPaste={onPaste}
         onKeyDown={(e) => {
           // 阻止剪切快捷键冒泡，防止触发浏览器后退等行为
           if ((e.metaKey || e.ctrlKey) && (e.key === 'x' || e.key === 'X')) {

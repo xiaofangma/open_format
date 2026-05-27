@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo, type ChangeEvent } from 'react'
+import { useState, useRef, useCallback, useMemo, type ChangeEvent, type ClipboardEvent } from 'react'
 import { toBlob } from 'html-to-image'
 import MarkdownEditor from './components/MarkdownEditor'
 import XiaohongshuPreview from './components/XiaohongshuPreview'
@@ -11,6 +11,59 @@ const WECHAT_CODE_FONT = 'Menlo, "SF Mono", "SFMono-Regular", Monaco, Consolas, 
 
 function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function getImageRefName(value: string) {
+  const cleaned = value
+    .trim()
+    .replace(/^['"]|['"]$/g, '')
+    .split('|')[0]
+    .split('#')[0]
+    .split('?')[0]
+    .replace(/\\/g, '/')
+
+  try {
+    return decodeURIComponent(cleaned).split('/').pop() || cleaned
+  } catch {
+    return cleaned.split('/').pop() || cleaned
+  }
+}
+
+function replaceMatchingImageRef(markdown: string, filename: string, placeholder: string) {
+  const targetName = getImageRefName(filename).toLowerCase()
+  let replaced = false
+
+  const withWikiRefs = markdown.replace(/!\[\[([^\]]+)\]\]/g, (full, ref: string) => {
+    if (getImageRefName(ref).toLowerCase() !== targetName) return full
+    replaced = true
+    return `![${filename}](${placeholder})`
+  })
+
+  const withMarkdownRefs = withWikiRefs.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (full, alt: string, url: string) => {
+    if (getImageRefName(url).toLowerCase() !== targetName) return full
+    replaced = true
+    return `![${alt || filename}](${placeholder})`
+  })
+
+  return { markdown: withMarkdownRefs, replaced }
+}
+
+function replaceFirstLocalImageRef(markdown: string, filename: string, placeholder: string) {
+  let replaced = false
+
+  const withWikiRef = markdown.replace(/!\[\[([^\]]+)\]\]/, () => {
+    replaced = true
+    return `![${filename}](${placeholder})`
+  })
+  if (replaced) return { markdown: withWikiRef, replaced }
+
+  const withMarkdownRef = markdown.replace(/!\[([^\]]*)\]\(([^)]+)\)/, (full, alt: string, url: string) => {
+    if (/^(https?:|data:|__IMG_)/i.test(url.trim())) return full
+    replaced = true
+    return `![${alt || filename}](${placeholder})`
+  })
+
+  return { markdown: withMarkdownRef, replaced }
 }
 
 function App() {
@@ -56,29 +109,14 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
     setIsDownloading(true)
     try {
       if (!xhsRef.current) return
-      const pages = Array.from(xhsRef.current.children).filter(
-        (el) => el.classList.contains('xhs-page')
-      )
+      await document.fonts?.ready
+
+      const pages = Array.from(xhsRef.current.querySelectorAll<HTMLElement>(':scope > .xhs-page'))
       for (let i = 0; i < pages.length; i++) {
-        const node = pages[i] as HTMLElement
+        const node = pages[i]
         const blob = await toBlob(node, { pixelRatio: 3 })
         if (!blob) continue
-        const file = new File([blob], `xiaohongshu-page-${i + 1}.png`, { type: 'image/png' })
 
-        // 优先使用系统分享面板（iOS/macOS 可直接存入照片）
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({ files: [file], title: '小红书长图' })
-            continue
-          } catch (err) {
-            // 用户取消分享 (AbortError) 时不 fallback，只有真正出错才下载
-            if (err instanceof DOMException && err.name === 'AbortError') {
-              continue
-            }
-          }
-        }
-
-        // Fallback：浏览器下载
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.download = `xiaohongshu-page-${i + 1}.png`
@@ -88,6 +126,8 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
         link.click()
         document.body.removeChild(link)
         URL.revokeObjectURL(url)
+
+        await new Promise((resolve) => window.setTimeout(resolve, 150))
       }
     } finally {
       downloadingRef.current = false
@@ -207,10 +247,10 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
       code.replaceWith(span)
     })
 
-    // 4. 列表项之间收紧，只保留列表整体和正文之间的间距
+    // 4. 列表折行收紧，同时保留条目之间的轻微间距
     clone.querySelectorAll('li').forEach((li) => {
-      li.style.margin = '0'
-      li.style.lineHeight = '1.65'
+      li.style.margin = '0 0 6px'
+      li.style.lineHeight = '1.45'
     })
 
     // 5. 给所有内联样式加上 !important，抵抗微信编辑器的样式过滤
@@ -341,17 +381,15 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
     }
   }, [])
 
-  const handleDrop = useCallback(
-    async (e: React.DragEvent) => {
-      e.preventDefault()
-      setDragOver(false)
-
-      const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith('image/'))
+  const importImageFiles = useCallback(
+    async (
+      files: File[],
+      options: { cursorPos?: number; selectionEnd?: number; replaceFirstLocalRef?: boolean } = {}
+    ) => {
       if (files.length === 0) return
 
-      // 在拖拽前记录光标位置
-      const cursorPos = editorRef.current?.selectionStart ?? markdown.length
-
+      const cursorPos = options.cursorPos ?? editorRef.current?.selectionStart ?? markdown.length
+      const selectionEnd = options.selectionEnd ?? editorRef.current?.selectionEnd ?? cursorPos
       const newImages: Record<string, string> = {}
       const fileInfos: { filename: string; placeholder: string }[] = []
 
@@ -376,31 +414,65 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
       let newMarkdown = markdown
       const unmatched: { filename: string; placeholder: string }[] = []
 
-      // 先处理匹配替换
       fileInfos.forEach(({ filename, placeholder }) => {
-        const wikiPattern = new RegExp(`!\\[\\[${escapeRegExp(filename)}\\]\\]`, 'g')
-        const mdPattern = new RegExp(`!\\[[^\\]]*\\]\\(${escapeRegExp(filename)}\\)`, 'g')
+        const matched = replaceMatchingImageRef(newMarkdown, filename, placeholder)
+        newMarkdown = matched.markdown
 
-        if (wikiPattern.test(newMarkdown) || mdPattern.test(newMarkdown)) {
-          newMarkdown = newMarkdown.replace(wikiPattern, `![${filename}](${placeholder})`)
-          newMarkdown = newMarkdown.replace(mdPattern, `![${filename}](${placeholder})`)
-        } else {
-          unmatched.push({ filename, placeholder })
+        if (matched.replaced) return
+
+        if (options.replaceFirstLocalRef) {
+          const fallback = replaceFirstLocalImageRef(newMarkdown, filename, placeholder)
+          newMarkdown = fallback.markdown
+          if (fallback.replaced) return
         }
+
+        unmatched.push({ filename, placeholder })
       })
 
-      // 未匹配的图片插入到光标位置
       if (unmatched.length > 0) {
-        const insertText = unmatched.map(({ filename, placeholder }) =>
-          `![${filename}](${placeholder})`
-        ).join('\n\n')
-        newMarkdown = newMarkdown.slice(0, cursorPos) + '\n\n' + insertText + '\n' + newMarkdown.slice(cursorPos)
+        const insertText = unmatched
+          .map(({ filename, placeholder }) => `![${filename}](${placeholder})`)
+          .join('\n\n')
+        const prefix = cursorPos > 0 && !newMarkdown.slice(0, cursorPos).endsWith('\n') ? '\n\n' : ''
+        const suffix = selectionEnd < newMarkdown.length && !newMarkdown.slice(selectionEnd).startsWith('\n') ? '\n' : ''
+        newMarkdown = newMarkdown.slice(0, cursorPos) + prefix + insertText + suffix + newMarkdown.slice(selectionEnd)
       }
 
       setImages((prev) => ({ ...prev, ...newImages }))
       setMarkdown(newMarkdown)
     },
     [markdown]
+  )
+
+  const handleDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault()
+      setDragOver(false)
+
+      const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith('image/'))
+      if (files.length === 0) return
+
+      const cursorPos = editorRef.current?.selectionStart ?? markdown.length
+      await importImageFiles(files, { cursorPos, selectionEnd: cursorPos })
+    },
+    [importImageFiles, markdown]
+  )
+
+  const handlePaste = useCallback(
+    async (e: ClipboardEvent<HTMLTextAreaElement>) => {
+      const files = Array.from(e.clipboardData.items)
+        .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+        .map((item) => item.getAsFile())
+        .filter((file): file is File => Boolean(file))
+
+      if (files.length === 0) return
+
+      e.preventDefault()
+      const cursorPos = e.currentTarget.selectionStart
+      const selectionEnd = e.currentTarget.selectionEnd
+      await importImageFiles(files, { cursorPos, selectionEnd, replaceFirstLocalRef: true })
+    },
+    [importImageFiles]
   )
 
   const processedMarkdown = useMemo(() => {
@@ -495,7 +567,7 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
             </div>
             <span className="text-xs text-gray-300">{markdown.length} 字符</span>
           </div>
-          <MarkdownEditor ref={editorRef} value={markdown} onChange={setMarkdown} />
+          <MarkdownEditor ref={editorRef} value={markdown} onChange={setMarkdown} onPaste={handlePaste} />
 
           {/* Image Prompt Panel */}
           {activeTab === 'wechat' && showImagePrompt && (

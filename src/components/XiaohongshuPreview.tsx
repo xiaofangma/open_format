@@ -10,7 +10,8 @@ interface Props {
 const PAGE_WIDTH = 390
 const PAGE_HEIGHT = 700
 const PAGE_PADDING_X = 30
-const PAGE_PADDING_Y = 32
+const PAGE_PADDING_TOP = 32
+const PAGE_PADDING_BOTTOM = 18
 const AUTHOR_HEIGHT = 76
 const BOTTOM_SAFE = 0 // 底部安全区域取消，图片允许被裁剪
 
@@ -166,8 +167,8 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
           measured.push({ id: idx, height: rect.height })
         })
 
-        const availableFirst = PAGE_HEIGHT - PAGE_PADDING_Y * 2 - AUTHOR_HEIGHT - BOTTOM_SAFE
-        const available = PAGE_HEIGHT - PAGE_PADDING_Y * 2 - BOTTOM_SAFE
+        const availableFirst = PAGE_HEIGHT - PAGE_PADDING_TOP - PAGE_PADDING_BOTTOM - AUTHOR_HEIGHT - BOTTOM_SAFE
+        const available = PAGE_HEIGHT - PAGE_PADDING_TOP - PAGE_PADDING_BOTTOM - BOTTOM_SAFE
 
         const allPages: MeasuredBlock[][] = []
         let currentPage: MeasuredBlock[] = []
@@ -491,7 +492,7 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                 width: PAGE_WIDTH,
                 height: PAGE_HEIGHT,
                 backgroundColor: '#FAF8F3',
-                padding: `${PAGE_PADDING_Y}px ${PAGE_PADDING_X}px`,
+                padding: `${PAGE_PADDING_TOP}px ${PAGE_PADDING_X}px ${PAGE_PADDING_BOTTOM}px`,
                 boxSizing: 'border-box',
                 overflow: 'hidden',
                 fontFamily: 'var(--font-song)',
@@ -568,8 +569,8 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
               <div
                 style={{
                   height: pageIdx === 0
-                    ? PAGE_HEIGHT - PAGE_PADDING_Y * 2 - AUTHOR_HEIGHT - BOTTOM_SAFE
-                    : PAGE_HEIGHT - PAGE_PADDING_Y * 2 - BOTTOM_SAFE,
+                    ? PAGE_HEIGHT - PAGE_PADDING_TOP - PAGE_PADDING_BOTTOM - AUTHOR_HEIGHT - BOTTOM_SAFE
+                    : PAGE_HEIGHT - PAGE_PADDING_TOP - PAGE_PADDING_BOTTOM - BOTTOM_SAFE,
                   overflow: 'hidden',
                 }}
               >

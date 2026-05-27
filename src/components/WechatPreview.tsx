@@ -195,7 +195,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
             ul: ({ children, style }: { children?: React.ReactNode; style?: React.CSSProperties }) => (
               <ul style={{
                 fontSize: '17px',
-                lineHeight: 1.65,
+                lineHeight: 1.45,
                 margin: '0 0 20px',
                 paddingLeft: '28px',
                 color: '#3f3f3f',
@@ -208,7 +208,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
             ol: ({ children, style }: { children?: React.ReactNode; style?: React.CSSProperties }) => (
               <ol style={{
                 fontSize: '17px',
-                lineHeight: 1.65,
+                lineHeight: 1.45,
                 margin: '0 0 20px',
                 paddingLeft: '28px',
                 color: '#2563eb',
@@ -219,7 +219,7 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
               </ol>
             ),
             li: ({ children }) => (
-              <li style={{ margin: '0', lineHeight: 1.65 }}>
+              <li style={{ margin: '0 0 6px', lineHeight: 1.45 }}>
                 <span style={{ color: '#3f3f3f' }}>{children}</span>
               </li>
             ),
