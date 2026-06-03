@@ -13,8 +13,8 @@ const REFERENCE_IMAGE_HEIGHT = 1589
 const PAGE_HEIGHT = Math.round(PAGE_WIDTH * REFERENCE_IMAGE_HEIGHT / REFERENCE_IMAGE_WIDTH)
 const PAGE_PADDING_X = 30
 const PAGE_PADDING_TOP = 32
-const PAGE_PADDING_BOTTOM = 8
-const AUTHOR_HEIGHT = 62
+const PAGE_PADDING_BOTTOM = 12
+const AUTHOR_HEIGHT = 80
 const BOTTOM_SAFE = 0 // 底部安全区域取消，图片允许被裁剪
 
 interface BlockInfo {
@@ -259,10 +259,10 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
               key={idx}
               style={{
                 fontFamily: 'var(--font-song)',
-                fontSize: '23px',
+                fontSize: '32px',
                 fontWeight: 700,
-                lineHeight: 1.25,
-                paddingBottom: '16px',
+                lineHeight: 1.18,
+                paddingBottom: '20px',
                 margin: 0,
                 color: '#2C2C2C',
                 wordBreak: 'break-word',
@@ -277,11 +277,11 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
               key={idx}
               style={{
                 fontFamily: 'var(--font-song)',
-                fontSize: '17px',
+                fontSize: '19px',
                 fontWeight: 700,
-                lineHeight: 1.3,
-                paddingTop: '20px',
-                paddingBottom: '10px',
+                lineHeight: 1.25,
+                paddingTop: '22px',
+                paddingBottom: '12px',
                 margin: 0,
                 color: '#2C2C2C',
                 wordBreak: 'break-word',
@@ -296,11 +296,11 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
               key={idx}
               style={{
                 fontFamily: 'var(--font-song)',
-                fontSize: '15px',
+                fontSize: '16px',
                 fontWeight: 700,
-                lineHeight: 1.35,
-                paddingTop: '14px',
-                paddingBottom: '8px',
+                lineHeight: 1.28,
+                paddingTop: '16px',
+                paddingBottom: '10px',
                 margin: 0,
                 color: '#2C2C2C',
                 wordBreak: 'break-word',
@@ -316,11 +316,11 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
               style={{
                 background: '#EDF2F7',
                 borderRadius: '0px',
-                padding: '6px 10px',
-                margin: '0 0 10px 0',
+                padding: '7px 10px',
+                margin: '0 0 16px 0',
                 color: '#475569',
-                fontSize: '14px',
-                lineHeight: 1.55,
+                fontSize: '15px',
+                lineHeight: 1.45,
                 fontFamily: 'var(--font-song)',
                 wordBreak: 'break-word',
               }}
@@ -336,10 +336,10 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: '8px',
-                paddingBottom: '5px',
+                paddingBottom: '8px',
                 margin: 0,
-                fontSize: '14px',
-                lineHeight: 1.6,
+                fontSize: '15px',
+                lineHeight: 1.5,
                 fontFamily: 'var(--font-song)',
                 color: '#2C2C2C',
                 wordBreak: 'break-word',
@@ -357,10 +357,10 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: '8px',
-                paddingBottom: '5px',
+                paddingBottom: '8px',
                 margin: 0,
-                fontSize: '14px',
-                lineHeight: 1.6,
+                fontSize: '15px',
+                lineHeight: 1.5,
                 fontFamily: 'var(--font-song)',
                 color: '#2C2C2C',
                 wordBreak: 'break-word',
@@ -378,7 +378,7 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
             <div
               key={idx}
               style={{
-                paddingBottom: '12px',
+                paddingBottom: '16px',
                 margin: 0,
                 minHeight: '120px',
                 display: 'flex',
@@ -417,9 +417,9 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                 padding: '12px',
                 borderRadius: '8px',
                 overflow: 'auto',
-                fontSize: '12px',
+                fontSize: '13px',
                 lineHeight: 1.45,
-                margin: '0 0 10px',
+                margin: '0 0 16px',
                 fontFamily: 'ui-monospace, monospace',
                 color: '#D97757',
                 whiteSpace: 'pre-wrap',
@@ -436,8 +436,8 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
               style={{
                 border: 'none',
                 borderTop: '1px solid #d8cfc6',
-                paddingTop: '16px',
-                paddingBottom: '16px',
+                paddingTop: '20px',
+                paddingBottom: '20px',
                 margin: 0,
               }}
             />
@@ -448,9 +448,9 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
               key={idx}
               style={{
                 fontFamily: 'var(--font-song)',
-                fontSize: '14px',
-                lineHeight: 1.62,
-                paddingBottom: '10px',
+                fontSize: '15px',
+                lineHeight: 1.5,
+                paddingBottom: '18px',
                 margin: 0,
                 color: '#2C2C2C',
                 textAlign: 'justify',
@@ -506,14 +506,14 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px',
-                    marginBottom: '20px',
+                    gap: '14px',
+                    marginBottom: '30px',
                   }}
                 >
                   <div
                     style={{
-                      width: 42,
-                      height: 42,
+                      width: 52,
+                      height: 52,
                       borderRadius: '50%',
                       background: authorAvatar ? `url(${authorAvatar}) center/cover` : '#d4c4b4',
                       overflow: 'hidden',
@@ -528,7 +528,7 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '18px',
+                          fontSize: '22px',
                           color: '#fff',
                           fontFamily: 'var(--font-song)',
                         }}
@@ -540,7 +540,7 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                   <div>
                     <div
                       style={{
-                        fontSize: '14px',
+                        fontSize: '16px',
                         fontWeight: 500,
                         color: '#2C2C2C',
                         lineHeight: 1.3,
@@ -554,7 +554,7 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                     </div>
                     <div
                       style={{
-                        fontSize: '11px',
+                        fontSize: '13px',
                         color: '#999',
                         lineHeight: 1.4,
                         marginTop: '4px',
