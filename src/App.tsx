@@ -3,6 +3,7 @@ import { toBlob } from 'html-to-image'
 import MarkdownEditor from './components/MarkdownEditor'
 import XiaohongshuPreview from './components/XiaohongshuPreview'
 import WechatPreview from './components/WechatPreview'
+import xhsAvatar from './assets/xhs-avatar.png'
 import { Download, Copy, FileText, Image, Upload, Sparkles, X, Loader2 } from 'lucide-react'
 
 type Tab = 'xiaohongshu' | 'wechat'
@@ -90,9 +91,9 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
 
 这是一个长期存在的问题，但随着像 DeepSeek 这样的公司出现，情况正在改变。
 `)
-  const [authorName, setAuthorName] = useState('小盖')
-  const [authorHandle, setAuthorHandle] = useState('@xiaogai')
-  const [authorAvatar, setAuthorAvatar] = useState('')
+  const [authorName, setAuthorName] = useState('海瑟')
+  const [authorHandle, setAuthorHandle] = useState('@AIDeepDive')
+  const [authorAvatar, setAuthorAvatar] = useState(xhsAvatar)
   const [dragOver, setDragOver] = useState(false)
   const [images, setImages] = useState<Record<string, string>>({})
   const [showImagePrompt, setShowImagePrompt] = useState(false)
