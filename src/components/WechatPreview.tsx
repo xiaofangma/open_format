@@ -6,6 +6,14 @@ import rehypeRaw from 'rehype-raw'
 const BlockCodeCtx = React.createContext(false)
 const WECHAT_CODE_FONT = 'Menlo, "SF Mono", "SFMono-Regular", Monaco, Consolas, "Liberation Mono", monospace'
 
+function splitCodeLines(text: string) {
+  return text.replace(/\n$/, '').split('\n')
+}
+
+function preserveCodeSpaces(line: string) {
+  return line.replace(/\t/g, '    ').replace(/ /g, '\u00A0')
+}
+
 // 从 React children 中提取纯文本
 function getText(node: React.ReactNode): string {
   if (typeof node === 'string') return node
@@ -245,8 +253,9 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
               )
             },
             pre: ({ children }) => (
-              <BlockCodeCtx.Provider value={true}>
-                <section style={{
+              <section
+                data-wechat-code-block="true"
+                style={{
                   background: '#F3F4F6',
                   padding: '16px',
                   borderRadius: '8px',
@@ -259,10 +268,26 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
                   color: '#4B5563',
                   whiteSpace: 'pre-wrap',
                   wordBreak: 'break-word',
-                }}>
-                  {children}
-                </section>
-              </BlockCodeCtx.Provider>
+                }}
+              >
+                {splitCodeLines(getText(children)).map((line, index) => (
+                  <p
+                    key={index}
+                    style={{
+                      margin: '0px',
+                      padding: '0px',
+                      minHeight: '1.7em',
+                      fontSize: '15px',
+                      lineHeight: 1.7,
+                      color: '#4B5563',
+                      fontFamily: WECHAT_CODE_FONT,
+                      wordBreak: 'break-word',
+                    }}
+                  >
+                    {line.length > 0 ? preserveCodeSpaces(line) : '\u00A0'}
+                  </p>
+                ))}
+              </section>
             ),
             hr: () => (
               <hr style={{

@@ -10,6 +10,58 @@ type Tab = 'xiaohongshu' | 'wechat'
 
 const WECHAT_CODE_FONT = 'Menlo, "SF Mono", "SFMono-Regular", Monaco, Consolas, "Liberation Mono", monospace'
 
+function splitCodeLines(text: string) {
+  return text.replace(/\n$/, '').split('\n')
+}
+
+function preserveCodeSpaces(line: string) {
+  return line.replace(/\t/g, '    ').replace(/ /g, '\u00A0')
+}
+
+function getCodeBlockText(block: Element) {
+  const lines = Array.from(block.querySelectorAll('p')).map((line) =>
+    (line.textContent || '').replace(/\u00A0/g, ' ')
+  )
+
+  if (lines.length > 0) {
+    return lines.join('\n')
+  }
+
+  return block.textContent || ''
+}
+
+function createWechatCodeBlock(documentRef: Document, text: string) {
+  const section = documentRef.createElement('section')
+  section.style.background = '#F3F4F6'
+  section.style.backgroundColor = '#F3F4F6'
+  section.style.padding = '16px'
+  section.style.borderRadius = '8px'
+  section.style.overflow = 'hidden'
+  section.style.fontSize = '15px'
+  section.style.lineHeight = '1.7'
+  section.style.margin = '0 0 20px'
+  section.style.fontFamily = WECHAT_CODE_FONT
+  section.style.fontVariantLigatures = 'none'
+  section.style.color = '#4B5563'
+  section.style.wordBreak = 'break-word'
+
+  splitCodeLines(text).forEach((line) => {
+    const p = documentRef.createElement('p')
+    p.style.margin = '0px'
+    p.style.padding = '0px'
+    p.style.minHeight = '1.7em'
+    p.style.fontSize = '15px'
+    p.style.lineHeight = '1.7'
+    p.style.color = '#4B5563'
+    p.style.fontFamily = WECHAT_CODE_FONT
+    p.style.wordBreak = 'break-word'
+    p.textContent = line.length > 0 ? preserveCodeSpaces(line) : '\u00A0'
+    section.appendChild(p)
+  })
+
+  return section
+}
+
 function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
@@ -216,25 +268,13 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
       bq.appendChild(lowerP)
     })
 
-    // 3. 避免公众号后台套用自己的 code/pre 默认样式
+    // 3. 把代码块拆成逐行段落，避免公众号后台压平 pre/code 的换行和缩进
+    clone.querySelectorAll('[data-wechat-code-block="true"]').forEach((block) => {
+      block.replaceWith(createWechatCodeBlock(document, getCodeBlockText(block)))
+    })
+
     clone.querySelectorAll('pre').forEach((pre) => {
-      const section = document.createElement('section')
-      section.innerHTML = pre.innerHTML
-      section.style.cssText = (pre as HTMLElement).style.cssText
-      section.style.background = '#F3F4F6'
-      section.style.backgroundColor = '#F3F4F6'
-      section.style.padding = '16px'
-      section.style.borderRadius = '8px'
-      section.style.overflow = 'hidden'
-      section.style.fontSize = '15px'
-      section.style.lineHeight = '1.7'
-      section.style.margin = '0 0 20px'
-      section.style.fontFamily = WECHAT_CODE_FONT
-      section.style.fontVariantLigatures = 'none'
-      section.style.color = '#4B5563'
-      section.style.whiteSpace = 'pre-wrap'
-      section.style.wordBreak = 'break-word'
-      pre.replaceWith(section)
+      pre.replaceWith(createWechatCodeBlock(document, getCodeBlockText(pre)))
     })
 
     clone.querySelectorAll('code').forEach((code) => {
