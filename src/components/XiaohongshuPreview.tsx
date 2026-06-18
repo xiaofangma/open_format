@@ -11,10 +11,10 @@ const PAGE_WIDTH = 390
 const REFERENCE_IMAGE_WIDTH = 1206
 const REFERENCE_IMAGE_HEIGHT = 1589
 const PAGE_HEIGHT = Math.round(PAGE_WIDTH * REFERENCE_IMAGE_HEIGHT / REFERENCE_IMAGE_WIDTH)
-const PAGE_PADDING_X = 30
-const PAGE_PADDING_TOP = 32
+const PAGE_PADDING_X = 24
+const PAGE_PADDING_TOP = 26
 const PAGE_PADDING_BOTTOM = 12
-const AUTHOR_HEIGHT = 80
+const AUTHOR_HEIGHT = 58
 const BOTTOM_SAFE = 0 // 底部安全区域取消，图片允许被裁剪
 
 interface BlockInfo {
@@ -66,6 +66,25 @@ function parseInline(text: string): React.ReactNode {
   return parts.length === 1 ? parts[0] : <>{parts}</>
 }
 
+function parseOrderedListItem(text: string) {
+  const markdownMatch = text.match(/^(\d+)\.\s+(.+)$/)
+  const localizedMatch = text.match(/^(\d+)[、,，)）]\s*(.+)$/)
+  const parenthesizedMatch = text.match(/^[（(](\d+)[）)]\s*(.+)$/)
+  const match = markdownMatch || localizedMatch || parenthesizedMatch
+
+  if (!match) return null
+
+  return {
+    index: Number(match[1]),
+    content: match[2].trim(),
+  }
+}
+
+function parseUnorderedListItem(text: string) {
+  const match = text.match(/^[-*+•·▪◦]\s+(.+)$/)
+  return match?.[1].trim() || null
+}
+
 const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
   ({ markdown, authorName, authorHandle, authorAvatar }, ref) => {
     const [pages, setPages] = useState<MeasuredBlock[][]>([])
@@ -76,7 +95,6 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
       const lines = markdown.split('\n')
       const result: BlockInfo[] = []
       let currentParagraph = ''
-      let olCounter = 0
 
       const flushParagraph = () => {
         if (currentParagraph.trim()) {
@@ -88,9 +106,10 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i]
         const trimmed = line.trim()
+        const unorderedListItem = parseUnorderedListItem(trimmed)
+        const orderedListItem = parseOrderedListItem(trimmed)
         if (!trimmed) {
           flushParagraph()
-          olCounter = 0
           continue
         }
         if (trimmed.startsWith('```')) {
@@ -102,54 +121,47 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
             i++
           }
           result.push({ type: 'codeblock', content: codeLines.join('\n') })
-          olCounter = 0
           continue
         }
         if (trimmed.startsWith('# ')) {
           flushParagraph()
           result.push({ type: 'h1', content: trimmed.slice(2) })
-          olCounter = 0
         } else if (trimmed.startsWith('## ')) {
           flushParagraph()
           result.push({ type: 'h2', content: trimmed.slice(3) })
-          olCounter = 0
         } else if (trimmed.startsWith('### ')) {
           flushParagraph()
           result.push({ type: 'h3', content: trimmed.slice(4) })
-          olCounter = 0
         } else if (trimmed.startsWith('>')) {
           flushParagraph()
           result.push({ type: 'blockquote', content: trimmed.slice(1).trim() })
-          olCounter = 0
         } else if (/^!\[([^\]]*)\]\(([^)]+)\)/.test(trimmed)) {
           flushParagraph()
           const imgMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)/)
           if (imgMatch) {
             result.push({ type: 'img', content: imgMatch[1], url: imgMatch[2] })
           }
-          olCounter = 0
         } else if (/^!\[\[([^\]]+)\]\]/.test(trimmed)) {
           flushParagraph()
           const wikiMatch = trimmed.match(/^!\[\[([^\]]+)\]\]/)
           if (wikiMatch) {
             result.push({ type: 'img', content: '', url: wikiMatch[1] })
           }
-          olCounter = 0
-        } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+        } else if (unorderedListItem) {
           flushParagraph()
-          result.push({ type: 'li', content: trimmed.slice(2) })
-          olCounter = 0
+          result.push({ type: 'li', content: unorderedListItem })
         } else if (trimmed.startsWith('---') || trimmed.startsWith('***')) {
           flushParagraph()
           result.push({ type: 'hr', content: '' })
-          olCounter = 0
-        } else if (trimmed.match(/^\d+\.\s/)) {
+        } else if (orderedListItem) {
           flushParagraph()
-          olCounter++
-          result.push({ type: 'oli', content: trimmed.replace(/^\d+\.\s/, ''), olIndex: olCounter })
+          result.push({
+            type: 'oli',
+            content: orderedListItem.content,
+            olIndex: orderedListItem.index,
+          })
         } else {
           currentParagraph += (currentParagraph ? ' ' : '') + trimmed
-          olCounter = 0
         }
       }
       flushParagraph()
@@ -316,11 +328,11 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
               style={{
                 background: '#EDF2F7',
                 borderRadius: '0px',
-                padding: '7px 10px',
-                margin: '0 0 16px 0',
+                padding: '6px 10px',
+                margin: '0 0 13px 0',
                 color: '#475569',
                 fontSize: '15px',
-                lineHeight: 1.45,
+                lineHeight: 1.43,
                 fontFamily: 'var(--font-song)',
                 wordBreak: 'break-word',
               }}
@@ -336,10 +348,10 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: '8px',
-                paddingBottom: '8px',
+                paddingBottom: '6px',
                 margin: 0,
                 fontSize: '15px',
-                lineHeight: 1.5,
+                lineHeight: 1.43,
                 fontFamily: 'var(--font-song)',
                 color: '#2C2C2C',
                 wordBreak: 'break-word',
@@ -357,10 +369,10 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: '8px',
-                paddingBottom: '8px',
+                paddingBottom: '6px',
                 margin: 0,
                 fontSize: '15px',
-                lineHeight: 1.5,
+                lineHeight: 1.43,
                 fontFamily: 'var(--font-song)',
                 color: '#2C2C2C',
                 wordBreak: 'break-word',
@@ -378,7 +390,7 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
             <div
               key={idx}
               style={{
-                paddingBottom: '16px',
+                paddingBottom: '13px',
                 margin: 0,
                 minHeight: '120px',
                 display: 'flex',
@@ -414,12 +426,12 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
               key={idx}
               style={{
                 background: '#FFF0EB',
-                padding: '12px',
+                padding: '10px',
                 borderRadius: '8px',
                 overflow: 'auto',
                 fontSize: '13px',
-                lineHeight: 1.45,
-                margin: '0 0 16px',
+                lineHeight: 1.43,
+                margin: '0 0 13px',
                 fontFamily: 'ui-monospace, monospace',
                 color: '#D97757',
                 whiteSpace: 'pre-wrap',
@@ -436,8 +448,8 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
               style={{
                 border: 'none',
                 borderTop: '1px solid #d8cfc6',
-                paddingTop: '20px',
-                paddingBottom: '20px',
+                paddingTop: '16px',
+                paddingBottom: '16px',
                 margin: 0,
               }}
             />
@@ -449,8 +461,8 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
               style={{
                 fontFamily: 'var(--font-song)',
                 fontSize: '15px',
-                lineHeight: 1.5,
-                paddingBottom: '18px',
+                lineHeight: 1.43,
+                paddingBottom: '13px',
                 margin: 0,
                 color: '#2C2C2C',
                 textAlign: 'justify',
@@ -505,15 +517,15 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                 <div
                   style={{
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: '14px',
-                    marginBottom: '30px',
+                    alignItems: 'flex-start',
+                    gap: '12px',
+                    marginBottom: '16px',
                   }}
                 >
                   <div
                     style={{
-                      width: 52,
-                      height: 52,
+                      width: 42,
+                      height: 42,
                       borderRadius: '50%',
                       background: authorAvatar ? `url(${authorAvatar}) center/cover` : '#d4c4b4',
                       overflow: 'hidden',
@@ -528,7 +540,7 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '22px',
+                          fontSize: '18px',
                           color: '#fff',
                           fontFamily: 'var(--font-song)',
                         }}
@@ -537,28 +549,32 @@ const XiaohongshuPreview = forwardRef<HTMLDivElement, Props>(
                       </div>
                     )}
                   </div>
-                  <div>
+                  <div style={{ minWidth: 0, paddingTop: '3px' }}>
                     <div
                       style={{
-                        fontSize: '16px',
-                        fontWeight: 500,
+                        display: 'flex',
+                        alignItems: 'baseline',
+                        gap: '6px',
+                        flexWrap: 'wrap',
+                        fontSize: '15px',
+                        fontWeight: 700,
                         color: '#2C2C2C',
-                        lineHeight: 1.3,
-                        fontFamily: 'var(--font-song)',
+                        lineHeight: 1.25,
+                        fontFamily: 'system-ui, -apple-system, sans-serif',
                       }}
                     >
-                      {authorName}
-                      <span style={{ color: '#999', fontWeight: 400, marginLeft: '6px' }}>
+                      <span>{authorName}</span>
+                      <span style={{ color: '#697586', fontWeight: 400 }}>
                         {authorHandle}
                       </span>
                     </div>
                     <div
                       style={{
-                        fontSize: '13px',
-                        color: '#999',
-                        lineHeight: 1.4,
-                        marginTop: '4px',
-                        fontFamily: 'system-ui, sans-serif',
+                        marginTop: '3px',
+                        fontSize: '12px',
+                        lineHeight: 1.2,
+                        color: '#697586',
+                        fontFamily: 'system-ui, -apple-system, sans-serif',
                       }}
                     >
                       {today}
