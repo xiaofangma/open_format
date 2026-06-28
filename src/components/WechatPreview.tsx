@@ -35,9 +35,10 @@ function extractH2Text(line: string): string {
 
 interface Props {
   markdown: string
+  accountName: string
 }
 
-const WechatPreview: React.FC<Props> = ({ markdown }) => {
+const WechatPreview: React.FC<Props> = ({ markdown, accountName }) => {
   // 预先解析 markdown 中所有 ## 标题，建立 纯文本内容 -> 编号 的映射
   const h2TextToIndexMap = React.useMemo(() => {
     const map = new Map<string, number>()
@@ -367,6 +368,71 @@ const WechatPreview: React.FC<Props> = ({ markdown }) => {
         >
           {processedMarkdown}
         </ReactMarkdown>
+        <section
+          data-wechat-follow-guide="true"
+          style={{
+            margin: '36px 0 0',
+            padding: '24px 0 0',
+            borderTop: '1px solid #E5E7EB',
+          }}
+        >
+          <p
+            style={{
+              fontSize: '15px',
+              lineHeight: 1.75,
+              margin: '0 0 4px',
+              color: '#4B5563',
+              textAlign: 'center',
+            }}
+          >
+            Dive deeper into AI with <strong style={{ fontWeight: 'bold', color: '#2A5D95' }}>{accountName}</strong>
+          </p>
+          <p
+            style={{
+              fontSize: '15px',
+              lineHeight: 1.75,
+              margin: '0',
+              color: '#4B5563',
+              textAlign: 'center',
+            }}
+          >
+            喜欢这篇文章，欢迎关注
+          </p>
+          <section
+            style={{
+              margin: '16px 0 0',
+              padding: '18px 16px',
+              border: '1px dashed #CBD5E1',
+              background: '#F8FAFC',
+              borderRadius: '6px',
+              textAlign: 'center',
+            }}
+          >
+            <p
+              style={{
+                fontSize: '14px',
+                lineHeight: 1.7,
+                margin: '0 0 2px',
+                color: '#64748B',
+                textAlign: 'center',
+                fontWeight: 'bold',
+              }}
+            >
+              此处插入公众号名片
+            </p>
+            <p
+              style={{
+                fontSize: '14px',
+                lineHeight: 1.7,
+                margin: '0',
+                color: '#9CA3AF',
+                textAlign: 'center',
+              }}
+            >
+              发布前请在公众号后台替换成公众号名片组件
+            </p>
+          </section>
+        </section>
       </div>
     </div>
   )

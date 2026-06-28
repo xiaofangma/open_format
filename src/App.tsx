@@ -146,6 +146,7 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
   const [authorName, setAuthorName] = useState('海瑟')
   const [authorHandle, setAuthorHandle] = useState('@AIDeepDive')
   const [authorAvatar, setAuthorAvatar] = useState(xhsAvatar)
+  const [wechatAccountName, setWechatAccountName] = useState('AIDeepDive')
   const [dragOver, setDragOver] = useState(false)
   const [images, setImages] = useState<Record<string, string>>({})
   const [showImagePrompt, setShowImagePrompt] = useState(false)
@@ -686,6 +687,21 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
               </div>
             </div>
           )}
+
+          {activeTab === 'wechat' && (
+            <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
+              <p className="text-xs text-gray-400 font-medium mb-2">公众号关注引导</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="公众号名称"
+                  value={wechatAccountName}
+                  onChange={(e) => setWechatAccountName(e.target.value)}
+                  className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-gray-300"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right: Preview */}
@@ -731,7 +747,10 @@ DeepSeek 被所有人公认为技术品味和执行力最好，是技术方向�
                 authorAvatar={authorAvatar}
               />
             ) : (
-              <WechatPreview markdown={processedMarkdown} />
+              <WechatPreview
+                markdown={processedMarkdown}
+                accountName={wechatAccountName.trim() || 'AIDeepDive'}
+              />
             )}
           </div>
         </div>
