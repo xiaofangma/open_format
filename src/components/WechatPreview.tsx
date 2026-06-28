@@ -396,7 +396,7 @@ const WechatPreview: React.FC<Props> = ({ markdown, accountName }) => {
               textAlign: 'center',
             }}
           >
-            喜欢这篇文章，欢迎关注
+            保持好奇、一起探索，喜欢这篇文章，欢迎关注
           </p>
           <section
             style={{
